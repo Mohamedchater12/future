@@ -1,0 +1,268 @@
+// Dev: SQLite (fichier local, zéro installation).
+// Prod: repasser provider = "postgresql" et pointer DATABASE_URL vers la
+// base Postgres (les enums sont émulés en TEXT par Prisma sous SQLite,
+// donc aucun changement de modèle n'est nécessaire au moment du switch).
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum AdminRole {
+  ADMIN
+}
+
+enum DemandeStatus {
+  NOUVEAU
+  EN_COURS
+  TRAITE
+  ARCHIVE
+}
+
+enum ClientStatus {
+  ACTIF
+  ARCHIVE
+}
+
+enum AvisStatus {
+  PUBLIE
+  EN_ATTENTE
+  MASQUE
+}
+
+enum NotificationType {
+  NOUVELLE_DEMANDE
+  NOUVEAU_CLIENT
+  CLIENT_CONVERTI
+  NOUVEL_AVIS
+  NOUVEAU_MESSAGE_CLIENT
+  NOUVEAU_FICHIER_CLIENT
+  AUTRE
+}
+
+enum MissionStatus {
+  EN_ATTENTE
+  EN_COURS
+  TERMINE
+}
+
+enum MessageSender {
+  CLIENT
+  ADMIN
+}
+
+enum FileAuthor {
+  CLIENT
+  ADMIN
+}
+
+model Admin {
+  id           String    @id @default(cuid())
+  name         String
+  email        String    @unique
+  passwordHash String
+  role         AdminRole @default(ADMIN)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model Demande {
+  id           String        @id @default(cuid())
+  firstName    String
+  lastName     String
+  email        String
+  phone        String
+  company      String?
+  service      String
+  message      String
+  status       DemandeStatus @default(NOUVEAU)
+  internalNote String?
+  client       Client?       @relation(fields: [clientId], references: [id])
+  clientId     String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@index([status])
+  @@index([clientId])
+}
+
+model Client {
+  id        String       @id @default(cuid())
+  name      String
+  company   String?
+  email     String
+  phone     String?
+  project   String?
+  status    ClientStatus @default(ACTIF)
+  notes     String?
+  demandes  Demande[]
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  // Espace client : un Client n'a un accès au portail que si passwordHash est
+  // renseigné (auto-inscription, ou "réclamé" après conversion depuis une
+  // Demande). notificationsSeenAt sert à dériver le badge "non lu" du
+  // dashboard client sans table de notifications dédiée.
+  passwordHash        String?
+  avatarUrl           String?
+  notificationsSeenAt DateTime?
+  missions            Mission[]
+  messages            Message[]
+  avis                Avis[]
+}
+
+model Service {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  icon        String
+  image       String?
+  order       Int      @default(0)
+  visible     Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  title       String
+  category    String
+  stat        String
+  description String?
+  image       String?
+  order       Int      @default(0)
+  visible     Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model TrustedBy {
+  id        String   @id @default(cuid())
+  name      String
+  logoUrl   String
+  link      String?
+  order     Int      @default(0)
+  visible   Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Tool {
+  id        String   @id @default(cuid())
+  name      String
+  iconUrl   String
+  category  String
+  order     Int      @default(0)
+  visible   Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Stat {
+  id        String   @id @default(cuid())
+  label     String
+  value     Int
+  suffix    String?
+  icon      String?
+  order     Int      @default(0)
+  visible   Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Avis {
+  id        String     @id @default(cuid())
+  name      String
+  company   String?
+  photoUrl  String?
+  rating    Int
+  quote     String
+  status    AvisStatus @default(EN_ATTENTE)
+  featured  Boolean    @default(false)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  // Renseigné quand l'avis vient de l'espace client (POST /api/client/avis) ;
+  // null pour les avis ajoutés manuellement par l'admin.
+  client   Client? @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  clientId String?
+
+  @@index([clientId])
+}
+
+model Mission {
+  id          String        @id @default(cuid())
+  client      Client        @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  clientId    String
+  title       String
+  service     String
+  description String
+  status      MissionStatus @default(EN_ATTENTE)
+  progress    Int           @default(0)
+  steps       MissionStep[]
+  files       MissionFile[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([clientId])
+}
+
+enum StepStatus {
+  A_FAIRE
+  EN_COURS
+  TERMINE
+}
+
+model MissionStep {
+  id        String     @id @default(cuid())
+  mission   Mission    @relation(fields: [missionId], references: [id], onDelete: Cascade)
+  missionId String
+  label     String
+  order     Int        @default(0)
+  status    StepStatus @default(A_FAIRE)
+  note      String?
+  imageUrl  String?
+  updatedAt DateTime   @default(now()) @updatedAt
+
+  @@index([missionId])
+}
+
+model MissionFile {
+  id         String     @id @default(cuid())
+  mission    Mission    @relation(fields: [missionId], references: [id], onDelete: Cascade)
+  missionId  String
+  name       String
+  url        String
+  uploadedBy FileAuthor
+  createdAt  DateTime   @default(now())
+
+  @@index([missionId])
+}
+
+model Message {
+  id        String        @id @default(cuid())
+  client    Client        @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  clientId  String
+  sender    MessageSender
+  content   String
+  // "lu par le destinataire" : un message CLIENT est lu quand l'admin l'a vu,
+  // un message ADMIN est lu quand le client l'a vu.
+  read      Boolean       @default(false)
+  createdAt DateTime      @default(now())
+
+  @@index([clientId])
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  type      NotificationType
+  message   String
+  link      String?
+  read      Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  @@index([read])
+}

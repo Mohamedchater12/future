@@ -1,0 +1,26 @@
+# dependencies
+/node_modules
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# env
+.env
+.env*.local
+
+# prisma
+/prisma/dev.db
+/prisma/dev.db-journal
+
+# uploads (local fallback only — prod uses Cloudinary)
+/public/uploads
+
+# misc
+.DS_Store
+*.tsbuildinfo
+npm-debug.log*
+/.scratch
