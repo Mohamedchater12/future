@@ -21,6 +21,12 @@ export async function POST(request: Request) {
     );
   }
 
-  const service = await prisma.service.create({ data: parsed.data });
+  const data = {
+    ...parsed.data,
+    title: parsed.data.title ?? parsed.data.title_en,
+    description: parsed.data.description ?? parsed.data.description_en,
+  };
+
+  const service = await prisma.service.create({ data });
   return NextResponse.json({ service }, { status: 201 });
 }

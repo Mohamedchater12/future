@@ -40,18 +40,23 @@ export default function ProjectFormModal({
     resolver: zodResolver(projectSchema),
     defaultValues: project
       ? {
-          title: project.title,
+          title_en: (project as any).title_en ?? project.title,
+          title_ar: (project as any).title_ar ?? "",
           category: project.category,
           stat: project.stat,
-          description: project.description ?? undefined,
+          description_en: (project as any).description_en ?? project.description ?? undefined,
+          description_ar: (project as any).description_ar ?? "",
           image: project.image ?? undefined,
           order: project.order,
           visible: project.visible,
         }
       : {
-          title: "",
+          title_en: "",
+          title_ar: "",
           category: "",
           stat: "",
+          description_en: "",
+          description_ar: "",
           order: nextOrder,
           visible: true,
         },
@@ -85,9 +90,15 @@ export default function ProjectFormModal({
     <Modal title={project ? dict.form.editTitle : dict.form.addTitle} onClose={onClose}>
       <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
         <div>
-          <label className="mb-1.5 block text-sm font-medium text-white">{dict.form.title}</label>
-          <input className={inputClasses} {...register("title")} />
-          {errors.title && <p className="mt-1 text-xs text-red-400">{errors.title.message}</p>}
+          <label className="mb-1.5 block text-sm font-medium text-white">{dict.form.title} (English)</label>
+          <input className={inputClasses} {...register("title_en")} />
+          {errors.title_en && <p className="mt-1 text-xs text-red-400">{(errors.title_en as any).message}</p>}
+        </div>
+
+        <div>
+          <label className="mb-1.5 block text-sm font-medium text-white">{dict.form.title} (Arabic)</label>
+          <input className={inputClasses} {...register("title_ar")} />
+          {errors.title_ar && <p className="mt-1 text-xs text-red-400">{(errors.title_ar as any).message}</p>}
         </div>
 
         <div>
@@ -116,10 +127,18 @@ export default function ProjectFormModal({
             rows={4}
             className={`${inputClasses} resize-none`}
             placeholder={dict.form.descriptionPlaceholder}
-            {...register("description")}
+            {...register("description_en")}
           />
-          {errors.description && (
-            <p className="mt-1 text-xs text-red-400">{errors.description.message}</p>
+          {errors.description_en && (
+            <p className="mt-1 text-xs text-red-400">{(errors.description_en as any).message}</p>
+          )}
+        </div>
+
+        <div>
+          <label className="mb-1.5 block text-sm font-medium text-white">{dict.form.description} (Arabic)</label>
+          <textarea rows={4} className={`${inputClasses} resize-none`} {...register("description_ar")} />
+          {errors.description_ar && (
+            <p className="mt-1 text-xs text-red-400">{(errors.description_ar as any).message}</p>
           )}
         </div>
 
@@ -161,7 +180,7 @@ export default function ProjectFormModal({
                     {watched.category || dict.form.previewCategoryFallback}
                   </p>
                   <h3 className="mt-1 font-heading text-base font-semibold text-white">
-                    {watched.title || dict.form.previewTitleFallback}
+                    {(lang === "ar" ? watched.title_ar : watched.title_en) || dict.form.previewTitleFallback}
                   </h3>
                 </div>
                 <IconArrowUpRight size={16} className="mb-1 shrink-0 text-portal-accent" />

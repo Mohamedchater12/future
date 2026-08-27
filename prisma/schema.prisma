@@ -8,7 +8,8 @@ datasource db {
 }
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
 }
 
 enum AdminRole {
@@ -115,28 +116,38 @@ model Client {
 }
 
 model Service {
-  id          String   @id @default(cuid())
-  title       String
-  description String
-  icon        String
-  image       String?
-  order       Int      @default(0)
-  visible     Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id              String   @id @default(cuid())
+  title           String
+  description     String
+  // New multilingual fields — optional to preserve compatibility.
+  title_en        String?
+  title_ar        String?
+  description_en  String?
+  description_ar  String?
+  icon            String
+  image           String?
+  order           Int      @default(0)
+  visible         Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 }
 
 model Project {
-  id          String   @id @default(cuid())
-  title       String
-  category    String
-  stat        String
-  description String?
-  image       String?
-  order       Int      @default(0)
-  visible     Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id               String   @id @default(cuid())
+  title            String
+  // Multilingual fields
+  title_en         String?
+  title_ar         String?
+  category         String
+  stat             String
+  description      String?
+  description_en   String?
+  description_ar   String?
+  image            String?
+  order            Int      @default(0)
+  visible          Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 }
 
 model TrustedBy {
@@ -194,26 +205,24 @@ model Avis {
 }
 
 model Mission {
-  id          String        @id @default(cuid())
-  client      Client        @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  clientId    String
-  title       String
-  service     String
-  description String
-  status      MissionStatus @default(EN_ATTENTE)
-  progress    Int           @default(0)
-  steps       MissionStep[]
-  files       MissionFile[]
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  id             String        @id @default(cuid())
+  client         Client        @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  clientId       String
+  title          String
+  title_en       String?
+  title_ar       String?
+  service        String
+  description    String
+  description_en String?
+  description_ar String?
+  status         MissionStatus @default(EN_ATTENTE)
+  progress       Int           @default(0)
+  steps          MissionStep[]
+  files          MissionFile[]
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
 
   @@index([clientId])
-}
-
-enum StepStatus {
-  A_FAIRE
-  EN_COURS
-  TERMINE
 }
 
 model MissionStep {
@@ -221,6 +230,8 @@ model MissionStep {
   mission   Mission    @relation(fields: [missionId], references: [id], onDelete: Cascade)
   missionId String
   label     String
+  label_en  String?
+  label_ar  String?
   order     Int        @default(0)
   status    StepStatus @default(A_FAIRE)
   note      String?
@@ -228,6 +239,12 @@ model MissionStep {
   updatedAt DateTime   @default(now()) @updatedAt
 
   @@index([missionId])
+}
+
+enum StepStatus {
+  A_FAIRE
+  EN_COURS
+  TERMINE
 }
 
 model MissionFile {

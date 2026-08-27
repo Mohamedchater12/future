@@ -37,6 +37,9 @@ function ProjectCard({
   resultLabel: string;
   onSelect: () => void;
 }) {
+  const { lang } = useLanguage();
+  const title = lang === "ar" ? (project as any).title_ar ?? (project as any).title_en ?? project.title : (project as any).title_en ?? project.title;
+
   const [cursor, setCursor] = useState<{ x: number; y: number } | null>(null);
   // Half the badge's own footprint (p-3 padding + 18px icon ≈ 42px), so the
   // x/y fed to Framer Motion already centers it on the pointer — kept out of
@@ -105,7 +108,7 @@ function ProjectCard({
               {project.category}
             </p>
             <h3 className="mt-2 font-heading text-xl font-semibold text-white">
-              {project.title}
+              {title}
             </h3>
           </div>
         </div>

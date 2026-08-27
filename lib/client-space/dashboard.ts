@@ -90,7 +90,7 @@ export async function getClientSummary(
       id: `mission-${mission.id}`,
       type: "mission",
       message: formatMessage(dict[MISSION_STATUS_TEMPLATE[mission.status]], {
-        title: mission.title,
+        title: lang === "ar" ? (mission as any).title_ar ?? (mission as any).title_en ?? mission.title : (mission as any).title_en ?? (mission as any).title_ar ?? mission.title,
       }),
       date: mission.updatedAt,
       href: "/espace-client/demandes",

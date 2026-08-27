@@ -29,7 +29,8 @@ export default function MissionDetailSheet({
   const { lang } = useAdminLanguage();
   const dict = missionsTranslations[lang];
   const missionStatusLabels = getMissionStatusLabels(dict);
-  const [description, setDescription] = useState(mission.description);
+  const initialDescription = lang === "ar" ? (mission as any).description_ar ?? (mission as any).description_en ?? mission.description : (mission as any).description_en ?? mission.description;
+  const [description, setDescription] = useState(initialDescription);
   const [isSavingStatus, setIsSavingStatus] = useState(false);
   const [isSavingDescription, setIsSavingDescription] = useState(false);
   const [fileName, setFileName] = useState("");
@@ -64,7 +65,10 @@ export default function MissionDetailSheet({
   async function handleSaveDescription() {
     setIsSavingDescription(true);
     try {
-      await patchMission({ description });
+      const payload: Record<string, unknown> = {};
+      if (lang === "ar") payload.description_ar = description;
+      else payload.description_en = description;
+      await patchMission(payload);
       toast.success(dict.toasts.descriptionSaved);
     } catch {
       toast.error(dict.toasts.descriptionSaveFailed);
@@ -110,10 +114,14 @@ export default function MissionDetailSheet({
 
     setIsAddingStep(true);
     try {
-      const response = await fetch(`/api/admin/missions/${mission.id}/steps`, {
+      const bodyPayload: any = {};
+    if (lang === "ar") bodyPayload.label_ar = newStepLabel.trim();
+    else bodyPayload.label_en = newStepLabel.trim();
+
+    const response = await fetch(`/api/admin/missions/${mission.id}/steps`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ label: newStepLabel.trim() }),
+        body: JSON.stringify(bodyPayload),
       });
       if (!response.ok) throw new Error("add_step_failed");
       const data = await response.json();
@@ -156,7 +164,7 @@ export default function MissionDetailSheet({
       <div className="relative flex h-full w-full max-w-md flex-col overflow-y-auto border-l border-white/10 bg-base-black p-6">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h2 className="font-heading text-lg font-semibold text-white">{mission.title}</h2>
+            <h2 className="font-heading text-lg font-semibold text-white">{lang === "ar" ? (mission as any).title_ar ?? (mission as any).title_en ?? mission.title : (mission as any).title_en ?? mission.title}</h2>
             <p className="mt-0.5 text-xs text-base-gray">
               {mission.client.name}
               {mission.client.company && ` · ${mission.client.company}`}

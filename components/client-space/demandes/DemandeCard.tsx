@@ -25,7 +25,7 @@ export default function DemandeCard({
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="truncate text-sm font-semibold text-white">{mission.title}</p>
+          <p className="truncate text-sm font-semibold text-white">{lang === "ar" ? (mission as any).title_ar ?? (mission as any).title_en ?? mission.title : (mission as any).title_en ?? mission.title}</p>
           <p className="mt-0.5 truncate text-xs text-base-gray">{mission.service}</p>
         </div>
         <Badge className={`shrink-0 ${REQUEST_STATUS_STYLES[mission.status]}`}>

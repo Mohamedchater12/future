@@ -2,8 +2,17 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createMissionFromDemande, linkOrphanDemandesToClient } from "@/lib/missionFromDemande";
 
-export async function POST(_request: Request, { params }: { params: { id: string } }) {
+export async function POST(request: Request, { params }: { params: { id: string } }) {
   const demande = await prisma.demande.findUnique({ where: { id: params.id } });
+  let lang = "en";
+  try {
+    const body = await request.json().catch(() => null);
+    if (body && typeof body.lang === "string") {
+      lang = body.lang === "ar" ? "ar" : "en";
+    }
+  } catch (e) {
+    // ignore and default to en
+  }
   if (!demande) {
     return NextResponse.json({ error: "not_found" }, { status: 404 });
   }
@@ -36,11 +45,20 @@ export async function POST(_request: Request, { params }: { params: { id: string
   // Le client doit savoir que sa demande est acceptée : ce message système
   // remonte via le fil de messagerie existant (badge non-lu, notifications
   // dérivées) dès qu'il a accès à l'espace client.
+  const firstName = client.name.split(" ")[0];
+  let content = "";
+  if (lang === "ar") {
+    content = `خبر سار ${firstName} ! تم قبول طلبك بخصوص « ${demande.service} ». نبدأ المشروع — يمكنك متابعة تقدمه في "طلباتى".`;
+  } else {
+    // default to English
+    content = `Good news ${firstName}! Your request regarding “${demande.service}” has been accepted. We are starting the project — you can follow its progress in "My requests".`;
+  }
+
   await prisma.message.create({
     data: {
       clientId: client.id,
       sender: "ADMIN",
-      content: `Bonne nouvelle ${client.name.split(" ")[0]} ! Votre demande concernant « ${demande.service} » a été acceptée. Nous démarrons le projet — vous pouvez suivre son avancement dans "Mes demandes".`,
+      content,
     },
   });
 

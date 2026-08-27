@@ -7,14 +7,20 @@ export const missionStatusValues = ["EN_ATTENTE", "EN_COURS", "TERMINE"] as cons
 export const stepStatusValues = ["A_FAIRE", "EN_COURS", "TERMINE"] as const;
 
 export const missionStepInputSchema = z.object({
-  label: z.string().trim().min(1, "Le libellé est requis").max(150),
+  label_en: z.string().trim().min(1, "Label (English) is required").max(150),
+  label_ar: z.string().trim().max(150).optional(),
+  label: z.string().trim().max(150).optional(),
 });
 
 export const missionSchema = z.object({
   clientId: z.string().min(1, "Client requis"),
-  title: z.string().trim().min(1, "Le titre est requis").max(150),
+  title_en: z.string().trim().min(1, "English title is required").max(150),
+  title_ar: z.string().trim().max(150).optional(),
+  title: z.string().trim().max(150).optional(),
   service: z.string().trim().min(1, "Le service est requis").max(150),
-  description: z.string().trim().min(1, "La description est requise").max(3000),
+  description_en: z.string().trim().min(1, "English description is required").max(3000),
+  description_ar: z.string().trim().max(3000).optional(),
+  description: z.string().trim().max(3000).optional(),
   status: z.enum(missionStatusValues),
   progress: z.coerce.number().int().min(0).max(100),
   steps: z.array(missionStepInputSchema).min(1, "Ajoutez au moins une étape"),
@@ -33,8 +39,13 @@ export const updateMissionSchema = z.object({
 export type UpdateMissionInput = z.infer<typeof updateMissionSchema>;
 
 export const addMissionStepSchema = z.object({
-  label: z.string().trim().min(1, "Le libellé est requis").max(150),
-});
+  label: z.string().trim().min(1, "Le libellé est requis").max(150).optional(),
+  label_en: z.string().trim().min(1, "English label is required").max(150).optional(),
+  label_ar: z.string().trim().min(1, "Arabic label is required").max(150).optional(),
+}).refine(
+  (step) => Boolean(step.label || step.label_en || step.label_ar),
+  { message: "Le libellé est requis", path: ["label"] }
+);
 
 export type AddMissionStepInput = z.infer<typeof addMissionStepSchema>;
 

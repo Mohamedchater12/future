@@ -25,37 +25,19 @@ function initialsOf(name: string) {
     .toUpperCase();
 }
 
-type TestimonialItem = {
-  key: string;
-  name: string;
-  role?: string;
-  quote: string;
-  rating: number;
-};
-
 export default function Testimonials({ avis }: { avis: Avis[] }) {
   const { dict } = useLanguage();
   const { testimonials } = dict;
 
-  // Les avis publiés depuis l'espace client (validés par l'admin) priment ;
-  // le contenu statique traduit ne sert que de repli tant qu'aucun avis n'a
-  // encore été publié, pour ne pas laisser la section vide.
-  const items: TestimonialItem[] =
-    avis.length > 0
-      ? avis.map((a) => ({
-          key: a.id,
-          name: a.name,
-          role: a.company ?? undefined,
-          quote: a.quote,
-          rating: a.rating,
-        }))
-      : testimonials.items.map((t) => ({
-          key: t.name,
-          name: t.name,
-          role: t.role,
-          quote: t.quote,
-          rating: t.rating,
-        }));
+  if (avis.length === 0) return null;
+
+  const items = avis.map((a) => ({
+    key: a.id,
+    name: a.name,
+    role: a.company ?? undefined,
+    quote: a.quote,
+    rating: a.rating,
+  }));
 
   return (
     <section

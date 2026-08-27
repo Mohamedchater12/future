@@ -12,7 +12,7 @@ export default function ProjectDetailModal({
   project: Project | null;
   onClose: () => void;
 }) {
-  const { dict } = useLanguage();
+  const { dict, lang } = useLanguage();
   const { projects: projectsDict } = dict;
 
   return (
@@ -60,11 +60,11 @@ export default function ProjectDetailModal({
               <p className="text-xs font-medium uppercase tracking-[0.15em] text-portal-border">
                 {project.category}
               </p>
-              <h3 className="mt-2 font-heading text-2xl font-bold text-white">{project.title}</h3>
+              <h3 className="mt-2 font-heading text-2xl font-bold text-white">{(lang === "ar" ? (project as any).title_ar ?? (project as any).title_en ?? project.title : (project as any).title_en ?? project.title)}</h3>
 
-              {project.description && (
+              {(lang === "ar" ? (project as any).description_ar ?? (project as any).description_en ?? project.description : (project as any).description_en ?? project.description) && (
                 <p className="mt-4 whitespace-pre-wrap text-sm leading-relaxed text-base-gray">
-                  {project.description}
+                  {lang === "ar" ? (project as any).description_ar ?? (project as any).description_en ?? project.description : (project as any).description_en ?? project.description}
                 </p>
               )}
 

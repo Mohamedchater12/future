@@ -38,6 +38,7 @@ export default function MissionStepRow({
   const { lang } = useAdminLanguage();
   const dict = missionsTranslations[lang];
   const stepStatusLabels = getStepStatusLabels(dict);
+  const label = lang === "ar" ? (step as any).label_ar ?? (step as any).label_en ?? step.label : (step as any).label_en ?? step.label;
   const [note, setNote] = useState(step.note ?? "");
   const [isSavingStatus, setIsSavingStatus] = useState(false);
   const [isSavingNote, setIsSavingNote] = useState(false);
@@ -160,7 +161,7 @@ export default function MissionStepRow({
 
         <div className="min-w-0 flex-1">
           <div className="flex items-center justify-between gap-2">
-            <p className="truncate text-sm font-medium text-white">{step.label}</p>
+            <p className="truncate text-sm font-medium text-white">{label}</p>
             <button
               type="button"
               onClick={handleDelete}

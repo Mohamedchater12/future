@@ -27,10 +27,15 @@ export async function POST(request: Request, { params }: { params: { id: string 
     orderBy: { order: "desc" },
   });
 
+  // Prefer language-specific fields if provided, fall back to legacy label.
+  const labelValue = (parsed.data as any).label_en ?? (parsed.data as any).label_ar ?? (parsed.data as any).label ?? "";
+
   await prisma.missionStep.create({
     data: {
       missionId: params.id,
-      label: parsed.data.label,
+      label: labelValue,
+      label_en: (parsed.data as any).label_en ?? null,
+      label_ar: (parsed.data as any).label_ar ?? null,
       order: (lastStep?.order ?? -1) + 1,
     },
   });

@@ -50,7 +50,7 @@ export default function MissionsTable({
                 )}
               </td>
               <td className="px-4 py-3">
-                <p className="text-white">{mission.title}</p>
+                <p className="text-white">{lang === "ar" ? (mission as any).title_ar ?? (mission as any).title_en ?? mission.title : (mission as any).title_en ?? mission.title}</p>
                 <p className="text-xs text-base-gray">{mission.service}</p>
               </td>
               <td className="px-4 py-3">

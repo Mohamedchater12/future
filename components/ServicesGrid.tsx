@@ -22,14 +22,19 @@ const fadeUp = {
 function ServiceCard({
   service,
   i,
-  href,
 }: {
   service: Service;
   i: number;
-  href: string;
 }) {
   const Icon = SERVICE_ICON_MAP[service.icon] ?? IconBriefcase;
   const { ref, onMouseMove } = useSpotlight<HTMLAnchorElement>();
+  const { lang, dict } = useLanguage();
+  const { services: servicesDict } = dict;
+
+  const title = lang === "ar" ? (service as any).title_ar ?? (service as any).title_en ?? service.title : (service as any).title_en ?? service.title;
+  const description = lang === "ar" ? (service as any).description_ar ?? (service as any).description_en ?? service.description : (service as any).description_en ?? service.description;
+
+  const href = getWhatsAppLink(servicesDict.whatsappTemplate.replace("{service}", title));
 
   return (
     <motion.a
@@ -51,12 +56,20 @@ function ServiceCard({
       </div>
 
       <h3 className="relative z-[1] mt-5 font-heading text-lg font-semibold text-white">
-        {service.title}
+        {title}
       </h3>
 
-      <p className="relative z-[1] mt-3 text-sm leading-relaxed text-base-gray">
-        {service.description}
-      </p>
+      {description && description.includes("\n") ? (
+        <ul className="relative z-[1] mt-3 list-disc pl-5 text-sm leading-relaxed text-base-gray">
+          {description.split(/\r?\n/).filter(Boolean).map((line: string, idx: number) => (
+            <li key={idx}>{line}</li>
+          ))}
+        </ul>
+      ) : (
+        <p className="relative z-[1] mt-3 text-sm leading-relaxed text-base-gray">
+          {description}
+        </p>
+      )}
     </motion.a>
   );
 }
@@ -100,15 +113,9 @@ export default function ServicesGrid({ services }: { services: Service[] }) {
           </p>
         ) : (
           <div className="mt-16 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {services.map((service, i) => {
-              const href = getWhatsAppLink(
-                servicesDict.whatsappTemplate.replace("{service}", service.title)
-              );
-
-              return (
-                <ServiceCard key={service.id} service={service} i={i} href={href} />
-              );
-            })}
+            {services.map((service, i) => (
+              <ServiceCard key={service.id} service={service} i={i} />
+            ))}
           </div>
         )}
       </div>

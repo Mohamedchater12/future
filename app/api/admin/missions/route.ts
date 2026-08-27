@@ -41,7 +41,16 @@ export async function POST(request: Request) {
     data: {
       ...rest,
       clientId,
-      steps: { create: steps.map((step, index) => ({ label: step.label, order: index })) },
+      title: rest.title ?? rest.title_en,
+      description: rest.description ?? rest.description_en,
+      steps: {
+        create: steps.map((step, index) => ({
+          label: step.label_en ?? step.label_ar ?? step.label ?? "",
+          label_en: step.label_en,
+          label_ar: step.label_ar,
+          order: index,
+        })),
+      },
     },
     include: missionInclude,
   });

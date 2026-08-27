@@ -35,7 +35,7 @@ export default function MissionFormModal({
       .split("\n")
       .map((s) => s.trim())
       .filter(Boolean)
-      .map((label) => ({ label }));
+      .map((label) => ({ label_en: label }));
 
     if (!clientId) {
       setError(dict.form.selectClientError);
@@ -54,9 +54,9 @@ export default function MissionFormModal({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           clientId,
-          title,
+          title_en: title,
           service,
-          description,
+          description_en: description,
           status: "EN_ATTENTE",
           progress: 0,
           steps,

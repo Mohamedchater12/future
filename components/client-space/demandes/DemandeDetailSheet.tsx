@@ -74,7 +74,7 @@ export default function DemandeDetailSheet({
       <div className="absolute inset-0" onClick={onClose} aria-hidden="true" />
       <div className="relative flex h-full w-full max-w-md flex-col overflow-y-auto border-l border-white/10 bg-base-black p-6">
         <div className="flex items-start justify-between gap-3">
-          <h2 className="font-heading text-lg font-semibold text-white">{mission.title}</h2>
+          <h2 className="font-heading text-lg font-semibold text-white">{lang === "ar" ? (mission as any).title_ar ?? (mission as any).title_en ?? mission.title : (mission as any).title_en ?? mission.title}</h2>
           <button
             type="button"
             onClick={onClose}

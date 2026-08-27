@@ -45,6 +45,9 @@ export default function ServicesTable({
         <tbody>
           {services.map((service, index) => {
             const Icon = SERVICE_ICON_MAP[service.icon] ?? IconBriefcase;
+            const title = lang === "ar" ? (service as any).title_ar ?? (service as any).title_en ?? service.title : (service as any).title_en ?? service.title;
+            const description = lang === "ar" ? (service as any).description_ar ?? (service as any).description_en ?? service.description : (service as any).description_en ?? service.description;
+            const descLines: string[] = (description || "").split(/\r?\n/).filter(Boolean);
             return (
               <tr
                 key={service.id}
@@ -78,8 +81,16 @@ export default function ServicesTable({
                       <Icon size={18} stroke={1.5} />
                     </div>
                     <div>
-                      <p className="font-medium text-white">{service.title}</p>
-                      <p className="max-w-xs truncate text-xs text-base-gray">{service.description}</p>
+                      <p className="font-medium text-white">{title}</p>
+                      {descLines.length > 1 ? (
+                        <ul className="max-w-xs list-disc pl-4 text-xs text-base-gray">
+                          {descLines.map((l, idx) => (
+                            <li key={idx} className="truncate">{l}</li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="max-w-xs truncate text-xs text-base-gray">{description}</p>
+                      )}
                     </div>
                   </div>
                 </td>

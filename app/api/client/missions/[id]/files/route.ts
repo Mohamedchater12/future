@@ -41,9 +41,10 @@ export async function POST(request: Request, { params }: { params: { id: string 
   await prisma.notification.create({
     data: {
       type: "NOUVEAU_FICHIER_CLIENT",
-      message: `${mission.title} : nouveau fichier envoyé par le client`,
-      link: `/admin/missions`,
-    },
+    // Prefer explicit English title when available, fall back to Arabic or legacy title
+    message: `${(mission as any).title_en ?? (mission as any).title_ar ?? mission.title} : nouveau fichier envoyé par le client`,
+    link: `/admin/missions`,
+  },
   });
 
   return NextResponse.json({ file }, { status: 201 });

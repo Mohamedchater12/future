@@ -29,7 +29,7 @@ export default function DemandeDetailSheet({
   const [isSavingNote, setIsSavingNote] = useState(false);
   const [isConverting, setIsConverting] = useState(false);
 
-  async function updateDemande(payload: { status?: DemandeStatus; internalNote?: string }) {
+  async function updateDemande(payload: { status?: DemandeStatus; internalNote?: string; lang?: string }) {
     const response = await fetch(`/api/admin/demandes/${demande.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -44,7 +44,7 @@ export default function DemandeDetailSheet({
   async function handleStatusChange(status: DemandeStatus) {
     setIsSavingStatus(true);
     try {
-      await updateDemande({ status });
+      await updateDemande({ status, lang });
       toast.success(dict.detail.statusUpdated);
     } catch {
       toast.error(dict.detail.statusUpdateFailed);
@@ -70,6 +70,8 @@ export default function DemandeDetailSheet({
     try {
       const response = await fetch(`/api/admin/demandes/${demande.id}/convert`, {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ lang }),
       });
       if (!response.ok) throw new Error("convert_failed");
       const data = await response.json();

@@ -22,6 +22,10 @@ export default function ProjectsTable({
   const { lang } = useAdminLanguage();
   const dict = projectsTranslations[lang];
 
+  function titleFor(p: Project) {
+    return lang === "ar" ? (p as any).title_ar ?? (p as any).title_en ?? p.title : (p as any).title_en ?? p.title;
+  }
+
   if (projects.length === 0) {
     return (
       <div className="rounded-xl border border-white/10 bg-white/[0.03] p-10 text-center text-sm text-base-gray">
@@ -81,7 +85,7 @@ export default function ProjectsTable({
                     )}
                   </div>
                   <div>
-                    <p className="font-medium text-white">{project.title}</p>
+                    <p className="font-medium text-white">{titleFor(project)}</p>
                     <p className="max-w-xs truncate text-xs text-base-gray">{project.category}</p>
                   </div>
                 </div>

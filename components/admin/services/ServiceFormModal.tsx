@@ -41,16 +41,20 @@ export default function ServiceFormModal({
     resolver: zodResolver(serviceSchema),
     defaultValues: service
       ? {
-          title: service.title,
-          description: service.description,
+          title_en: (service as any).title_en ?? service.title,
+          title_ar: (service as any).title_ar ?? "",
+          description_en: (service as any).description_en ?? service.description,
+          description_ar: (service as any).description_ar ?? "",
           icon: service.icon,
           image: service.image ?? undefined,
           order: service.order,
           visible: service.visible,
         }
       : {
-          title: "",
-          description: "",
+          title_en: "",
+          title_ar: "",
+          description_en: "",
+          description_ar: "",
           icon: SERVICE_ICON_OPTIONS[0].value,
           order: nextOrder,
           visible: true,
@@ -82,20 +86,36 @@ export default function ServiceFormModal({
     }
   }
 
+  const previewDescription = lang === "ar" ? watched.description_ar : watched.description_en;
+
   return (
     <Modal title={service ? dict.form.editTitle : dict.form.addTitle} onClose={onClose}>
       <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
         <div>
-          <label className="mb-1.5 block text-sm font-medium text-white">{dict.form.titleLabel}</label>
-          <input className={inputClasses} {...register("title")} />
-          {errors.title && <p className="mt-1 text-xs text-red-400">{errors.title.message}</p>}
+          <label className="mb-1.5 block text-sm font-medium text-white">{dict.form.titleLabel} (English)</label>
+          <input className={inputClasses} {...register("title_en")} />
+          {errors.title_en && <p className="mt-1 text-xs text-red-400">{(errors.title_en as any).message}</p>}
         </div>
 
         <div>
-          <label className="mb-1.5 block text-sm font-medium text-white">{dict.form.descriptionLabel}</label>
-          <textarea rows={3} className={`${inputClasses} resize-none`} {...register("description")} />
-          {errors.description && (
-            <p className="mt-1 text-xs text-red-400">{errors.description.message}</p>
+          <label className="mb-1.5 block text-sm font-medium text-white">{dict.form.titleLabel} (Arabic)</label>
+          <input className={inputClasses} {...register("title_ar")} />
+          {errors.title_ar && <p className="mt-1 text-xs text-red-400">{(errors.title_ar as any).message}</p>}
+        </div>
+
+        <div>
+          <label className="mb-1.5 block text-sm font-medium text-white">{dict.form.descriptionLabel} (English)</label>
+          <textarea rows={3} className={`${inputClasses} resize-none`} {...register("description_en")} />
+          {errors.description_en && (
+            <p className="mt-1 text-xs text-red-400">{(errors.description_en as any).message}</p>
+          )}
+        </div>
+
+        <div>
+          <label className="mb-1.5 block text-sm font-medium text-white">{dict.form.descriptionLabel} (Arabic)</label>
+          <textarea rows={3} className={`${inputClasses} resize-none`} {...register("description_ar")} />
+          {errors.description_ar && (
+            <p className="mt-1 text-xs text-red-400">{(errors.description_ar as any).message}</p>
           )}
         </div>
 
@@ -140,11 +160,19 @@ export default function ServiceFormModal({
               <PreviewIcon size={22} stroke={1.5} />
             </div>
             <h3 className="mt-5 font-heading text-lg font-semibold text-white">
-              {watched.title || dict.form.previewTitleFallback}
+              {(lang === "ar" ? watched.title_ar : watched.title_en) || dict.form.previewTitleFallback}
             </h3>
-            <p className="mt-3 text-sm leading-relaxed text-base-gray">
-              {watched.description || dict.form.previewDescriptionFallback}
-            </p>
+            {previewDescription?.includes("\n") ? (
+              <ul className="mt-3 list-disc pl-5 text-sm leading-relaxed text-base-gray">
+                {previewDescription.split(/\r?\n/).filter(Boolean).map((line, idx) => (
+                  <li key={idx}>{line}</li>
+                ))}
+              </ul>
+            ) : (
+              <p className="mt-3 text-sm leading-relaxed text-base-gray">
+                {(lang === "ar" ? watched.description_ar : watched.description_en) || dict.form.previewDescriptionFallback}
+              </p>
+            )}
           </div>
         </div>
 

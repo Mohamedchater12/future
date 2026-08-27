@@ -27,58 +27,101 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   const isAdminApi = pathname.startsWith("/api/admin");
-  // /api/client/register is the signup endpoint — called before any client
-  // session exists, so it must stay reachable without a token.
-  const isClientApi = pathname.startsWith("/api/client") && pathname !== "/api/client/register";
-  const isAdminLoginPage = pathname === "/admin/login";
-  const isClientAuthPage =
-    pathname === "/espace-client/connexion" || pathname === "/espace-client/inscription";
 
+  const isClientApi =
+    pathname.startsWith("/api/client") &&
+    pathname !== "/api/client/register";
+
+  const isAdminLoginPage = pathname === "/admin/login";
+
+  const isClientAuthPage =
+    pathname === "/espace-client/connexion" ||
+    pathname === "/espace-client/inscription";
+
+  // =========================
+  // ADMIN API
+  // =========================
   if (isAdminApi) {
     const token = await getAdminToken(request);
+
     if (!token) {
-      return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+      return NextResponse.json(
+        { error: "unauthorized" },
+        { status: 401 }
+      );
     }
+
     return NextResponse.next();
   }
 
+  // =========================
+  // CLIENT API
+  // =========================
   if (isClientApi) {
     const token = await getClientToken(request);
+
     if (!token) {
-      return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+      return NextResponse.json(
+        { error: "unauthorized" },
+        { status: 401 }
+      );
     }
+
     return NextResponse.next();
   }
 
+  // =========================
+  // ADMIN LOGIN
+  // =========================
   if (isAdminLoginPage) {
     const token = await getAdminToken(request);
+
     if (token) {
-      return NextResponse.redirect(new URL("/admin/dashboard", request.url));
+      return NextResponse.redirect(
+        new URL("/admin/dashboard", request.url)
+      );
     }
+
     return NextResponse.next();
   }
 
+  // =========================
+  // CLIENT AUTH PAGES
+  // IMPORTANT:
+  // Ne pas rediriger ici.
+  // La page de connexion doit rester accessible.
+  // =========================
   if (isClientAuthPage) {
-    const token = await getClientToken(request);
-    if (token) {
-      return NextResponse.redirect(new URL("/espace-client/dashboard", request.url));
-    }
     return NextResponse.next();
   }
 
+  // =========================
+  // ADMIN PROTECTED ROUTES
+  // =========================
   if (pathname.startsWith("/admin")) {
     const token = await getAdminToken(request);
+
     if (!token) {
-      return NextResponse.redirect(new URL("/admin/login", request.url));
+      return NextResponse.redirect(
+        new URL("/admin/login", request.url)
+      );
     }
+
     return NextResponse.next();
   }
 
+  // =========================
+  // CLIENT PROTECTED ROUTES
+  // =========================
   if (pathname.startsWith("/espace-client")) {
     const token = await getClientToken(request);
+
     if (!token) {
-      return NextResponse.redirect(new URL("/espace-client/connexion", request.url));
+      return NextResponse.redirect(
+        new URL("/espace-client/connexion", request.url)
+      );
     }
+
     return NextResponse.next();
   }
 
@@ -86,5 +129,10 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/api/admin/:path*", "/espace-client/:path*", "/api/client/:path*"],
+  matcher: [
+    "/admin/:path*",
+    "/api/admin/:path*",
+    "/espace-client/:path*",
+    "/api/client/:path*",
+  ],
 };
